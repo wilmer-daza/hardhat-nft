@@ -39,9 +39,9 @@ contract RandomIpfsNft is VRFConsumerBaseV2, ERC721URIStorage, Ownable {
 		address vrfCoordinatorV2,
 		uint64 subscriptionId,
 		bytes32 gasLane, // keyHash
-		uint256 mintFee,
 		uint32 callbackGasLimit,
-		string[3] memory dogTokenUris
+		string[3] memory dogTokenUris,
+		uint256 mintFee
 	) VRFConsumerBaseV2(vrfCoordinatorV2) ERC721("Random IPFS NFT", "RIN") {
 		i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
 		i_gasLane = gasLane;
@@ -56,8 +56,7 @@ contract RandomIpfsNft is VRFConsumerBaseV2, ERC721URIStorage, Ownable {
 	function requestNft() public payable returns (uint256 requestId) {
 		if (msg.value < i_mintFee) {
 			revert RandomIpfsNft__NeedMoreETHSent();
-		} //, "Not enough ETH sent to cover mint fee");
-		// s_tokenCounter++;
+		} //, "Not enough ETH sent to cover mint fee"
 		requestId = i_vrfCoordinator.requestRandomWords(
 			i_gasLane,
 			i_subscriptionId,
@@ -74,6 +73,7 @@ contract RandomIpfsNft is VRFConsumerBaseV2, ERC721URIStorage, Ownable {
 		uint256 tokenId = s_tokenCounter;
 		uint256 moddedRnf = randomWords[0] % MAX_CHANCE_VALUE;
 		Breed dogBreed = getBreedFromModdedRng(moddedRnf);
+		s_tokenCounter++;
 		_safeMint(dogOwner, tokenId);
 		_setTokenURI(tokenId, s_dogTokenUris[uint256(dogBreed)]);
 		emit NftMinted(dogBreed, dogOwner);
